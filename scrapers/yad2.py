@@ -68,10 +68,17 @@ class Yad2Scraper(BaseScraper):
             try:
                 for url in URLS:
                     logger.info("[yad2] Scraping URL: %s", url)
-                    page.goto(url)
+                    page.goto(url, wait_until="domcontentloaded", timeout=30000)
 
-                    page.wait_for_timeout(3000)
+                    try:
+                        page.wait_for_selector(
+                            "a[href*='/realestate/item']",
+                            timeout=15000,
+                        )
+                    except PlaywrightTimeoutError:
+                        logger.warning("[yad2] Listing selector not found within timeout, continuing anyway")
 
+                    page.wait_for_timeout(2000)
                     page.mouse.wheel(0, 5000)
                     page.wait_for_timeout(2000)
 
