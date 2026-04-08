@@ -50,6 +50,7 @@ class Yad2Scraper(BaseScraper):
                 headless=True,
                 args=[
                     "--no-sandbox",
+                    "--disable-dev-shm-usage",
                     "--disable-blink-features=AutomationControlled",
                 ],
             )
