@@ -69,3 +69,10 @@ class TelegramBot:
 
 # Backward-compatible alias kept for existing imports
 TelegramSender = TelegramBot
+
+
+def send_message(text: str) -> bool:
+    """Send a plain-text message using credentials from config."""
+    import config
+    bot = TelegramBot(token=config.TELEGRAM_BOT_TOKEN, chat_id=config.TELEGRAM_CHAT_ID)
+    return bot._send_text(text)

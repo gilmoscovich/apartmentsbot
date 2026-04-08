@@ -63,10 +63,12 @@ class ListingFilter:
     # ------------------------------------------------------------------
 
     def _is_valid_location(self, location: str) -> bool:
+        if not location:
+            return False
         city = extract_city(location).strip().lower()
         allowed = [c.strip().lower() for c in self.allowed_locations]
         print(f"Comparing city '{city}' against {allowed}")
-        return city in allowed
+        return any(a in city for a in allowed)
 
     def _is_valid_price(self, price: int) -> bool:
         return price <= self.max_price

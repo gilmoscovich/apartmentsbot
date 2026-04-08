@@ -15,8 +15,12 @@ from filters.filter import ListingFilter
 from dedup.deduplicator import Deduplicator
 from scrapers.yad2 import Yad2Scraper
 from scrapers.madlan import MadlanScraper
-from telegram.bot import TelegramBot
+from telegram.bot import TelegramBot, send_message
 from scheduler.scheduler import BotScheduler
+
+# --- Daily summary state ---
+_daily_stats = {"scraped": 0, "filtered": 0, "new": 0}
+_last_summary_day: int | None = None  # calendar day (0–6) when last summary was sent
 
 logging.basicConfig(
     level=logging.INFO,
@@ -24,6 +28,27 @@ logging.basicConfig(
     handlers=[logging.StreamHandler(sys.stdout)],
 )
 logger = logging.getLogger(__name__)
+
+
+def _maybe_send_daily_summary() -> None:
+    """Send a daily summary once per calendar day, then reset counters."""
+    import datetime
+    global _last_summary_day
+    today = datetime.date.today().toordinal()
+    if _last_summary_day == today:
+        return
+    _last_summary_day = today
+    s = _daily_stats
+    lines = [
+        "📊 Daily Summary\n",
+        f"Total scraped: {s['scraped']}",
+        f"After filter: {s['filtered']}",
+        f"New listings: {s['new']}",
+    ]
+    if s["new"] == 0:
+        lines.append("No new apartments today 👍")
+    send_message("\n".join(lines))
+    s["scraped"] = s["filtered"] = s["new"] = 0
 
 
 def run_pipeline() -> list[dict]:
@@ -44,6 +69,7 @@ def run_pipeline() -> list[dict]:
     # 1. Fetch from all sources
     listings = scraper1.fetch_listings()
     print(f"Fetched: {len(listings)} listings")
+    _daily_stats["scraped"] += len(listings)
 
     # 2. Filter by business rules (location / price / rooms)
     print("\n=== ALL LOCATIONS ===")
@@ -51,6 +77,7 @@ def run_pipeline() -> list[dict]:
         print(l.get("location"))
     listings = listing_filter.filter_listings(listings)
     print(f"After filter: {len(listings)} listings")
+    _daily_stats["filtered"] += len(listings)
 
     # 3. In-memory deduplication (cross-source fuzzy duplicates)
     listings = dedup.deduplicate(listings)
@@ -67,6 +94,8 @@ def run_pipeline() -> list[dict]:
 
         db.insert_listing(listing)
         new_listings.append(listing)
+
+    _daily_stats["new"] += len(new_listings)
 
     # 5. Send new listings to Telegram
     print(f"NEW LISTINGS COUNT: {len(new_listings)}")
@@ -127,5 +156,6 @@ if __name__ == "__main__":
         except Exception as e:
             print(f"Error occurred: {e}")
 
+        _maybe_send_daily_summary()
         print("Sleeping for 2 hours...")
         time.sleep(60 * 60 * 2)
