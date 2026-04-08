@@ -16,8 +16,8 @@ BASE_DIR = Path(__file__).parent
 DB_PATH = BASE_DIR / "data" / "apartments.db"
 
 # ── Telegram ─────────────────────────────────────────────────────────────────
-TELEGRAM_BOT_TOKEN: str = os.environ["TELEGRAM_BOT_TOKEN"]
-TELEGRAM_CHAT_ID: str = os.environ["TELEGRAM_CHAT_ID"]
+TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN")
+TELEGRAM_CHAT_ID: str = os.getenv("TELEGRAM_CHAT_ID")
 
 # ── Filters ──────────────────────────────────────────────────────────────────
 ALLOWED_CITIES: list[str] = [

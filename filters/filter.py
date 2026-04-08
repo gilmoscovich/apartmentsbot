@@ -13,7 +13,12 @@ class ListingFilter:
     """Filters listings to only those matching ALL business criteria."""
 
     def __init__(self) -> None:
-        self.allowed_locations = ["Pardes Hanna", "Binyamina", "Hadera", "Or Akiva"]
+        self.allowed_locations = [
+            "פרדס חנה",
+            "בנימינה",
+            "חדרה",
+            "אור עקיבא"
+        ]
         self.max_price = 4800
         self.required_rooms = 3
 
@@ -22,17 +27,14 @@ class ListingFilter:
     # ------------------------------------------------------------------
 
     def filter_listings(self, listings: list[dict]) -> list[dict]:
-        """Return only listings that pass every filter."""
         valid = []
         for listing in listings:
             reason = self._rejection_reason(listing)
             if reason:
-                logger.info("Filtered out (%s): %s", reason, listing.get("link", "?"))
                 print(f"Filtered out ({reason}): {listing.get('link', '?')}")
             else:
                 valid.append(listing)
         return valid
-
     # ------------------------------------------------------------------
     # Composite check
     # ------------------------------------------------------------------

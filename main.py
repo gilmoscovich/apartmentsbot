@@ -14,7 +14,7 @@ from filters.filter import ListingFilter
 from dedup.deduplicator import Deduplicator
 from scrapers.yad2 import Yad2Scraper
 from scrapers.madlan import MadlanScraper
-from telegram.bot import TelegramSender
+from telegram.bot import TelegramBot
 from scheduler.scheduler import BotScheduler
 
 logging.basicConfig(
@@ -62,7 +62,15 @@ def run_pipeline() -> list[dict]:
         db.insert_listing(listing)
         new_listings.append(listing)
 
-    # 5. Report results
+    # 5. Send new listings to Telegram
+    if new_listings:
+        bot = TelegramBot(token=config.TELEGRAM_BOT_TOKEN, chat_id=config.TELEGRAM_CHAT_ID)
+        for listing in new_listings:
+            ok = bot.send_listing(listing)
+            status = "sent" if ok else "FAILED"
+            print(f"[Telegram {status}] {listing['link']}")
+
+    # 6. Report results
     print("\n=== NEW LISTINGS ===")
     for listing in new_listings:
         print(listing)
