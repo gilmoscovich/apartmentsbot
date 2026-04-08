@@ -25,6 +25,7 @@ ALLOWED_CITIES: list[str] = [
     "בנימינה",    # Binyamina
     "חדרה",       # Hadera
     "אור עקיבא",  # Or Akiva
+    "הרצליה"      # רק לבדיקה
 ]
 MAX_PRICE: int = 4_800          # ILS
 REQUIRED_ROOMS: float = 3.0     # exact match (3 rooms)

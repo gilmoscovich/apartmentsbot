@@ -9,6 +9,15 @@ import logging
 logger = logging.getLogger(__name__)
 
 
+def extract_city(location: str) -> str:
+    if not location:
+        return ""
+    parts = [p.strip() for p in location.split(",")]
+    if len(parts) >= 2:
+        return parts[-1]
+    return location
+
+
 class ListingFilter:
     """Filters listings to only those matching ALL business criteria."""
 
@@ -54,8 +63,10 @@ class ListingFilter:
     # ------------------------------------------------------------------
 
     def _is_valid_location(self, location: str) -> bool:
-        location_lower = location.lower()
-        return any(allowed.lower() in location_lower for allowed in self.allowed_locations)
+        city = extract_city(location).strip().lower()
+        allowed = [c.strip().lower() for c in self.allowed_locations]
+        print(f"Comparing city '{city}' against {allowed}")
+        return city in allowed
 
     def _is_valid_price(self, price: int) -> bool:
         return price <= self.max_price

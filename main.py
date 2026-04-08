@@ -7,6 +7,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import sys
+import time
 
 import config
 from db.database import Database
@@ -33,16 +34,21 @@ def run_pipeline() -> list[dict]:
     Every new listing is inserted into the DB so subsequent runs skip it.
     """
     scraper1 = Yad2Scraper()
-    scraper2 = MadlanScraper()
+
+    listings = scraper1.fetch_listings()
+    
     listing_filter = ListingFilter()
     dedup = Deduplicator()
     db = Database()
 
     # 1. Fetch from all sources
-    listings = scraper1.fetch_listings() + scraper2.fetch_listings()
+    listings = scraper1.fetch_listings()
     print(f"Fetched: {len(listings)} listings")
 
     # 2. Filter by business rules (location / price / rooms)
+    print("\n=== ALL LOCATIONS ===")
+    for l in listings:
+        print(l.get("location"))
     listings = listing_filter.filter_listings(listings)
     print(f"After filter: {len(listings)} listings")
 
@@ -63,6 +69,7 @@ def run_pipeline() -> list[dict]:
         new_listings.append(listing)
 
     # 5. Send new listings to Telegram
+    print(f"NEW LISTINGS COUNT: {len(new_listings)}")
     if new_listings:
         bot = TelegramBot(token=config.TELEGRAM_BOT_TOKEN, chat_id=config.TELEGRAM_CHAT_ID)
         for listing in new_listings:
@@ -114,4 +121,11 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    run_pipeline()
+    while True:
+        try:
+            run_pipeline()
+        except Exception as e:
+            print(f"Error occurred: {e}")
+
+        print("Sleeping for 2 hours...")
+        time.sleep(60 * 60 * 2)
