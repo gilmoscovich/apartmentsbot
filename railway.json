@@ -1,5 +1,5 @@
 {
   "deploy": {
-    "startCommand": "playwright install chromium && python main.py"
+    "startCommand": "playwright install --with-deps chromium && python main.py"
   }
 }
