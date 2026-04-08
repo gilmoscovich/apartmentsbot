@@ -1,0 +1,25 @@
+# Web scraping
+playwright==1.44.0
+requests==2.32.3
+beautifulsoup4==4.12.3
+lxml==5.2.2
+
+# Async support
+aiohttp==3.9.5
+aiofiles==23.2.1
+
+# Telegram
+python-telegram-bot==21.3
+
+# Scheduling
+APScheduler==3.10.4
+
+# Config & utilities
+python-dotenv==1.0.1
+pydantic==2.7.4
+
+# Database
+# sqlite3 is in stdlib — no extra package needed
+
+# Deployment helpers
+uvicorn==0.30.1   # tiny health-check server for Railway/Render
