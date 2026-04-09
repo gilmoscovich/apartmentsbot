@@ -6,6 +6,8 @@ from __future__ import annotations
 
 import logging
 
+from config import ALLOWED_CITIES, MAX_PRICE, REQUIRED_ROOMS
+
 logger = logging.getLogger(__name__)
 
 
@@ -22,14 +24,9 @@ class ListingFilter:
     """Filters listings to only those matching ALL business criteria."""
 
     def __init__(self) -> None:
-        self.allowed_locations = [
-            "פרדס חנה",
-            "בנימינה",
-            "חדרה",
-            "אור עקיבא"
-        ]
-        self.max_price = 4800
-        self.required_rooms = 3
+        self.allowed_locations = ALLOWED_CITIES
+        self.max_price = MAX_PRICE
+        self.required_rooms = REQUIRED_ROOMS
 
     # ------------------------------------------------------------------
     # Public API

@@ -16,8 +16,13 @@ BASE_DIR = Path(__file__).parent
 DB_PATH = BASE_DIR / "data" / "apartments.db"
 
 # ── Telegram ─────────────────────────────────────────────────────────────────
-TELEGRAM_BOT_TOKEN: str = os.getenv("TELEGRAM_BOT_TOKEN")
-TELEGRAM_CHAT_ID: str = os.getenv("TELEGRAM_CHAT_ID")
+TELEGRAM_BOT_TOKEN: str = os.environ.get("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID: str = os.environ.get("TELEGRAM_CHAT_ID", "")
+
+if not TELEGRAM_BOT_TOKEN:
+    raise EnvironmentError("TELEGRAM_BOT_TOKEN is not set. Add it as an environment variable or GitHub Actions secret.")
+if not TELEGRAM_CHAT_ID:
+    raise EnvironmentError("TELEGRAM_CHAT_ID is not set. Add it as an environment variable or GitHub Actions secret.")
 
 # ── Filters ──────────────────────────────────────────────────────────────────
 ALLOWED_CITIES: list[str] = [
@@ -25,7 +30,9 @@ ALLOWED_CITIES: list[str] = [
     "בנימינה",    # Binyamina
     "חדרה",       # Hadera
     "אור עקיבא",  # Or Akiva
-    "הרצליה"      # רק לבדיקה
+    "הרצליה",     # Herzliya
+    "אולגה",      # Olga
+    "אור ים",     # Or Yam
 ]
 MAX_PRICE: int = 4_800          # ILS
 REQUIRED_ROOMS: float = 3.0     # exact match (3 rooms)
