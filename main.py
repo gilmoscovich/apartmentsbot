@@ -59,9 +59,6 @@ def run_pipeline() -> list[dict]:
     Every new listing is inserted into the DB so subsequent runs skip it.
     """
     scraper1 = Yad2Scraper()
-
-    listings = scraper1.fetch_listings()
-    
     listing_filter = ListingFilter()
     dedup = Deduplicator()
     db = Database()
