@@ -30,4 +30,4 @@ jobs:
         run: playwright install --with-deps chromium
 
       - name: Run scraper
-        run: python -c "import main; main.run_pipeline()"
+        run: python -c "import main; main.run_pipeline(); main._maybe_send_daily_summary()"
