@@ -229,10 +229,12 @@ class Yad2Scraper(BaseScraper):
 
     @staticmethod
     def _extract_price(text: str) -> int:
-        # Collect ALL numbers adjacent to ₪, then return the largest.
-        # This ignores "ירד ב-250 ₪" discount amounts and picks the actual rent price.
-        candidates = re.findall(r"([\d,]+)\s*₪|₪\s*([\d,]+)", text)
-        values = [int((a or b).replace(",", "")) for a, b in candidates]
+        # Collect ALL numbers adjacent to ₪ / ש"ח / ש״ח, return the largest.
+        shekel_pattern = r'₪|ש["\u05f4]ח|שח'
+        candidates = re.findall(
+            rf'([\d,]+)\s*(?:{shekel_pattern})|(?:{shekel_pattern})\s*([\d,]+)', text
+        )
+        values = [int((a or b).replace(",", "")) for a, b in candidates if (a or b)]
         if values:
             return max(values)
         # fallback: any 4-5 digit number that looks like a rent
@@ -243,8 +245,8 @@ class Yad2Scraper(BaseScraper):
 
     @staticmethod
     def _extract_rooms(text: str) -> float:
-        # Hebrew: "3 חדרים" or "3.5 חד'"
-        m = re.search(r"(\d+(?:[.,]\d)?)\s*(?:חדרים|חדר|חד)", text)
+        # Hebrew: "3 חדרים" / "3 חדרי שינה" / "3.5 חד'"
+        m = re.search(r"(\d+(?:[.,]\d)?)\s*(?:חדרי(?:\s+\S+)?|חדרים|חדר|חד)", text)
         if m:
             return float(m.group(1).replace(",", "."))
         return 0.0

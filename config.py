@@ -37,6 +37,12 @@ ALLOWED_CITIES: list[str] = [
 MAX_PRICE: int = 4_800          # ILS
 REQUIRED_ROOMS: float = 3.0     # exact match (3 rooms)
 
+# ── Apify / Facebook ─────────────────────────────────────────────────────────
+APIFY_API_TOKEN: str = os.environ.get("APIFY_API_TOKEN", "")
+FACEBOOK_GROUP_URLS: list[str] = [
+    u.strip() for u in os.environ.get("FACEBOOK_GROUP_URLS", "").split(",") if u.strip()
+]
+
 # ── Scheduler ─────────────────────────────────────────────────────────────────
 SCRAPE_INTERVAL_HOURS: int = int(os.getenv("SCRAPE_INTERVAL_HOURS", "48"))
 
