@@ -4,6 +4,7 @@ Facebook Groups scraper — fetches posts via Apify actor apify/facebook-groups-
 from __future__ import annotations
 
 import logging
+import re
 
 from apify_client import ApifyClient
 
@@ -97,16 +98,16 @@ class FacebookScraper(BaseScraper):
                 logger.debug("[facebook] Skipping sublet/roommate post: %s", post_url)
                 return None
 
-        price = Yad2Scraper._extract_price(text)
+        price = self._extract_price(text)
         rooms = Yad2Scraper._extract_rooms(text)
 
         if not price or not rooms:
             logger.debug("[facebook] Skipping post (no price/rooms): %s", post_url)
             return None
 
-        city = Yad2Scraper.extract_city_from_title(text)
-        if not city:
-            city = "unknown"
+        # Free-text posts: match a known city anywhere in the body, rather than
+        # Yad2's positional comma-parsing (which produces garbage here).
+        city = self._extract_city(text)
 
         title = next((line.strip() for line in text.splitlines() if line.strip()), text[:100])
 
@@ -127,6 +128,38 @@ class FacebookScraper(BaseScraper):
             images=[image_url] if image_url else [],
             external_id=post_url or None,
         )
+
+    # ------------------------------------------------------------------
+    # Facebook-specific extraction (free-text posts, not structured titles)
+    # ------------------------------------------------------------------
+
+    # Plausible monthly-rent bounds (ILS) — filters out phone numbers,
+    # square-meters, property values, etc.
+    _MIN_RENT = 1_500
+    _MAX_RENT = 12_000
+
+    @staticmethod
+    def _extract_city(text: str) -> str:
+        """Return the first ALLOWED city whose name appears anywhere in the text."""
+        for city in config.ALLOWED_CITIES:
+            if city in text:
+                return city
+        return "unknown"
+
+    @classmethod
+    def _extract_price(cls, text: str) -> int:
+        """Pick the lowest shekel amount within a plausible rent range.
+
+        Free-text posts often contain several numbers (phone, size, deposit);
+        the monthly rent is almost always the smallest shekel figure in range.
+        """
+        shekel = r'₪|ש["״]ח|שח'
+        candidates = re.findall(
+            rf'([\d,]+)\s*(?:{shekel})|(?:{shekel})\s*([\d,]+)', text
+        )
+        values = [int((a or b).replace(",", "")) for a, b in candidates if (a or b)]
+        plausible = [v for v in values if cls._MIN_RENT <= v <= cls._MAX_RENT]
+        return min(plausible) if plausible else 0
 
 
 # ------------------------------------------------------------------
