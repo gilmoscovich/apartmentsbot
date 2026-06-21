@@ -34,8 +34,9 @@ ALLOWED_CITIES: list[str] = [
     "אולגה",      # Olga
     "אור ים",     # Or Yam
 ]
-MAX_PRICE: int = 4_800          # ILS
-REQUIRED_ROOMS: float = 3.0     # exact match (3 rooms)
+MAX_PRICE: int = 5_000          # ILS
+MIN_ROOMS: float = 3.0          # inclusive lower bound
+MAX_ROOMS: float = 4.0          # inclusive upper bound (3, 3.5, 4 rooms)
 
 # ── Apify / Facebook ─────────────────────────────────────────────────────────
 APIFY_API_TOKEN: str = os.environ.get("APIFY_API_TOKEN", "")

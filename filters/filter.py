@@ -6,7 +6,7 @@ from __future__ import annotations
 
 import logging
 
-from config import ALLOWED_CITIES, MAX_PRICE, REQUIRED_ROOMS
+from config import ALLOWED_CITIES, MAX_PRICE, MIN_ROOMS, MAX_ROOMS
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +26,8 @@ class ListingFilter:
     def __init__(self) -> None:
         self.allowed_locations = ALLOWED_CITIES
         self.max_price = MAX_PRICE
-        self.required_rooms = REQUIRED_ROOMS
+        self.min_rooms = MIN_ROOMS
+        self.max_rooms = MAX_ROOMS
 
     # ------------------------------------------------------------------
     # Public API
@@ -71,7 +72,8 @@ class ListingFilter:
         return price <= self.max_price
 
     def _is_valid_rooms(self, rooms: float) -> bool:
-        return abs(rooms - self.required_rooms) < 0.1
+        # Small tolerance so 3.0/4.0 boundaries aren't lost to float noise.
+        return (self.min_rooms - 0.05) <= rooms <= (self.max_rooms + 0.05)
 
 
 # ------------------------------------------------------------------
