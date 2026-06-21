@@ -15,6 +15,7 @@ from filters.filter import ListingFilter
 from dedup.deduplicator import Deduplicator
 from scrapers.yad2 import Yad2Scraper
 from scrapers.madlan import MadlanScraper
+from scrapers.facebook import FacebookScraper
 from telegram.bot import TelegramBot, send_message
 from scheduler.scheduler import BotScheduler
 
@@ -59,12 +60,17 @@ def run_pipeline() -> list[dict]:
     Every new listing is inserted into the DB so subsequent runs skip it.
     """
     scraper1 = Yad2Scraper()
+    facebook = FacebookScraper()
     listing_filter = ListingFilter()
     dedup = Deduplicator()
     db = Database()
 
     # 1. Fetch from all sources
     listings = scraper1.fetch_listings()
+    print(f"Fetched from Yad2: {len(listings)} listings")
+    fb_listings = facebook.fetch_listings()
+    print(f"Fetched from Facebook: {len(fb_listings)} listings")
+    listings += fb_listings
     print(f"Fetched: {len(listings)} listings")
     _daily_stats["scraped"] += len(listings)
 
