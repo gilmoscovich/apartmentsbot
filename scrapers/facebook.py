@@ -148,16 +148,24 @@ class FacebookScraper(BaseScraper):
 
     @classmethod
     def _extract_price(cls, text: str) -> int:
-        """Pick the lowest shekel amount within a plausible rent range.
+        """Pick the lowest amount within a plausible rent range.
 
         Free-text posts often contain several numbers (phone, size, deposit);
-        the monthly rent is almost always the smallest shekel figure in range.
+        the monthly rent is almost always the smallest figure in range.
+        We match numbers next to a shekel sign OR next to rent keywords
+        (שכ"ד / שכירות / מחיר / לחודש), since FB posts often omit the ₪ sign.
         """
         shekel = r'₪|ש["״]ח|שח'
+        rent_kw = r'שכ["״]?ד|שכירות|שכ"ד|מחיר|לחודש|בחודש'
+        marker = rf'{shekel}|{rent_kw}'
         candidates = re.findall(
-            rf'([\d,]+)\s*(?:{shekel})|(?:{shekel})\s*([\d,]+)', text
+            rf'([\d,]+)\s*(?:{marker})|(?:{marker})\s*:?\s*([\d,]+)', text
         )
-        values = [int((a or b).replace(",", "")) for a, b in candidates if (a or b)]
+        values = []
+        for a, b in candidates:
+            digits = (a or b).replace(",", "")
+            if digits.isdigit():
+                values.append(int(digits))
         plausible = [v for v in values if cls._MIN_RENT <= v <= cls._MAX_RENT]
         return min(plausible) if plausible else 0
 
