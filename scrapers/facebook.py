@@ -39,8 +39,10 @@ class FacebookScraper(BaseScraper):
         "מחפש להתקרקע", "מחפשת להתקרקע", "מחפשים להתקרקע",
     ]
 
-    def __init__(self, max_posts: int = 100) -> None:
-        self.max_posts = max_posts
+    def __init__(self, results_limit: int | None = None, newer_than: str | None = None) -> None:
+        # Per-group cap and date filter — default to config (env-tunable) values.
+        self.results_limit = results_limit or config.FACEBOOK_RESULTS_LIMIT
+        self.newer_than = newer_than or config.FACEBOOK_NEWER_THAN
 
     def fetch_listings(self) -> list[dict]:
         if not config.APIFY_API_TOKEN:
@@ -53,11 +55,25 @@ class FacebookScraper(BaseScraper):
         client = ApifyClient(config.APIFY_API_TOKEN)
         run_input = {
             "startUrls": [{"url": u} for u in config.FACEBOOK_GROUP_URLS],
-            "maxPosts": self.max_posts,
+            # resultsLimit is the actor's real per-group cap (NOT "maxPosts").
+            "resultsLimit": self.results_limit,
+            # Only recent posts — the main credit saver.
+            "onlyPostsNewerThan": self.newer_than,
+            # Newest first, so the per-group cap keeps the freshest posts.
+            "viewOption": "CHRONOLOGICAL",
         }
 
+        logger.info(
+            "[facebook] Scraping %d group(s), %d posts/group, newer than '%s'",
+            len(config.FACEBOOK_GROUP_URLS), self.results_limit, self.newer_than,
+        )
+
         try:
-            run = client.actor("apify/facebook-groups-scraper").call(run_input=run_input)
+            # max_items is a hard ceiling on charged dataset items across all groups.
+            run = client.actor("apify/facebook-groups-scraper").call(
+                run_input=run_input,
+                max_items=config.FACEBOOK_MAX_ITEMS,
+            )
         except Exception as exc:
             logger.error("[facebook] Apify run failed: %s", exc, exc_info=True)
             return []
@@ -119,6 +135,6 @@ class FacebookScraper(BaseScraper):
 if __name__ == "__main__":
     import json
     logging.basicConfig(level=logging.INFO)
-    scraper = FacebookScraper(max_posts=10)
+    scraper = FacebookScraper(results_limit=5, newer_than="3 days")
     listings = scraper.fetch_listings()
     print(json.dumps(listings, indent=2, ensure_ascii=False))

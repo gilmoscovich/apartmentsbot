@@ -43,6 +43,15 @@ FACEBOOK_GROUP_URLS: list[str] = [
     u.strip() for u in os.environ.get("FACEBOOK_GROUP_URLS", "").split(",") if u.strip()
 ]
 
+# Apify cost controls — keep these tight to stay within free credits.
+# resultsLimit is PER GROUP, so total posts/run ≈ this × number of groups.
+FACEBOOK_RESULTS_LIMIT: int = int(os.getenv("FACEBOOK_RESULTS_LIMIT", "15"))
+# Only fetch posts newer than this (relative: "1 days", "2 days", "12 hours").
+# This is the main credit saver — quiet groups return almost nothing.
+FACEBOOK_NEWER_THAN: str = os.getenv("FACEBOOK_NEWER_THAN", "2 days")
+# Hard safety cap on total dataset items charged across ALL groups in one run.
+FACEBOOK_MAX_ITEMS: int = int(os.getenv("FACEBOOK_MAX_ITEMS", "200"))
+
 # ── Scheduler ─────────────────────────────────────────────────────────────────
 SCRAPE_INTERVAL_HOURS: int = int(os.getenv("SCRAPE_INTERVAL_HOURS", "48"))
 

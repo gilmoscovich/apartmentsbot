@@ -6,7 +6,7 @@ from scrapers.facebook import FacebookScraper
 def run_all_scrapers():
     yad2 = Yad2Scraper()
     madlan = MadlanScraper()
-    facebook = FacebookScraper(max_posts=20)
+    facebook = FacebookScraper(results_limit=10, newer_than="3 days")
 
     yad2_listings = yad2.fetch_listings()
     madlan_listings = madlan.fetch_listings()
