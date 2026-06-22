@@ -48,7 +48,8 @@ def _maybe_send_daily_summary() -> None:
     ]
     if s["new"] == 0:
         lines.append("No new apartments today 👍")
-    send_message("\n".join(lines))
+    ok = send_message("\n".join(lines))
+    print(f"[Telegram summary {'sent' if ok else 'FAILED'}] new={s['new']}")
     s["scraped"] = s["filtered"] = s["new"] = 0
 
 
